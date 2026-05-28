@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Box Cricket Caption Generator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            min-height: 100vh;
+            padding: 20px;
+            color: white;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #00d4ff;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 30px;
+        }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #00d4ff;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 1em;
+        }
+        input::placeholder { color: #888; }
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover { opacity: 0.9; }
+        .result-box {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 15px;
+            border-left: 4px solid #00d4ff;
+            display: none;
+        }
+        .result-box h3 {
+            color: #00d4ff;
+            margin-bottom: 10px;
+        }
+        .result-box p {
+            line-height: 1.6;
+            color: #ddd;
+        }
+        .copy-btn {
+            width: auto;
+            padding: 8px 15px;
+            margin-top: 10px;
+            font-size: 0.85em;
+            background: rgba(0,212,255,0.2);
+            border: 1px solid #00d4ff;
+            border-radius: 6px;
+        }
+        #loading {
+            text-align: center;
+            color: #00d4ff;
+            display: none;
+            margin-top: 15px;
+            font-size: 1.1em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏏 Box Cricket AI</h1>
+        <p class="subtitle">Generate Social Media Captions Instantly!</p>
+
+        <div class="card">
+            <label>🏟️ Venue Name</label>
+            <input type="text" id="venue" placeholder="e.g. Champion Box Cricket Arena">
+
+            <label>🏆 Tournament Details</label>
+            <input type="text" id="tournament" placeholder="e.g. Weekend T10 Tournament">
+
+            <label>🎁 Offer Details</label>
+            <input type="text" id="offer" placeholder="e.g. 20% off on group bookings">
+
+            <label>⏰ Timing</label>
+            <input type="text" id="timing" placeholder="e.g. 6 AM to 11 PM daily">
+
+            <button onclick="generateCaptions()">⚡ Generate Captions</button>
+        </div>
+
+        <div id="loading">🤖 AI is generating your captions...</div>
+
+        <div id="instagram" class="result-box">
+            <h3>📸 Instagram Caption</h3>
+            <p id="instagram-text"></p>
+            <button class="copy-btn" onclick="copyText('instagram-text')">📋 Copy</button>
+        </div>
+
+        <div id="whatsapp" class="result-box">
+            <h3>💬 WhatsApp Message</h3>
+            <p id="whatsapp-text"></p>
+            <button class="copy-btn" onclick="copyText('whatsapp-text')">📋 Copy</button>
+        </div>
+
+        <div id="hashtags" class="result-box">
+            <h3>#️⃣ Hashtags</h3>
+            <p id="hashtags-text"></p>
+            <button class="copy-btn" onclick="copyText('hashtags-text')">📋 Copy</button>
+        </div>
+    </div>
+
+    <script>
+        async function generateCaptions() {
+            const venue = document.getElementById("venue").value;
+            const tournament = document.getElementById("tournament").value;
+            const offer = document.getElementById("offer").value;
+            const timing = document.getElementById("timing").value;
+
+            if (!venue || !tournament || !offer || !timing) {
+                alert("Please fill in all fields!");
+                return;
+            }
+
+            document.getElementById("loading").style.display = "block";
+            document.getElementById("instagram").style.display = "none";
+            document.getElementById("whatsapp").style.display = "none";
+            document.getElementById("hashtags").style.display = "none";
+
+            const response = await fetch("/generate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ venue, tournament, offer, timing })
+            });
+
+            const data = await response.json();
+            const result = data.result;
+
+            const instaPart = result.split("WHATSAPP MESSAGE:")[0].replace("INSTAGRAM CAPTION:", "").trim();
+            const whatsappPart = result.split("WHATSAPP MESSAGE:")[1].split("HASHTAGS:")[0].trim();
+            const hashtagsPart = result.split("HASHTAGS:")[1].trim();
+
+            document.getElementById("instagram-text").innerText = instaPart;
+            document.getElementById("whatsapp-text").innerText = whatsappPart;
+            document.getElementById("hashtags-text").innerText = hashtagsPart;
+
+            document.getElementById("loading").style.display = "none";
+            document.getElementById("instagram").style.display = "block";
+            document.getElementById("whatsapp").style.display = "block";
+            document.getElementById("hashtags").style.display = "block";
+        }
+
+        function copyText(id) {
+            const text = document.getElementById(id).innerText;
+            navigator.clipboard.writeText(text);
+            alert("Copied to clipboard!");
+        }
+    </script>
+</body>
+</html>
