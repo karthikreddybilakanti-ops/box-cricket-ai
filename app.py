@@ -1,6 +1,5 @@
 import os
 from flask import Flask, render_template, request, jsonify
-import os
 from dotenv import load_dotenv
 import google.generativeai as genai
 
@@ -9,7 +8,6 @@ app = Flask(__name__)
 load_dotenv()
 api_key = os.getenv("GEMINI_API_KEY")
 genai.configure(api_key=api_key)
-
 @app.route("/")
 def home():
     return render_template("index.html")
